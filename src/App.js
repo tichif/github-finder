@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Alert from './components/layout/Alert';
@@ -9,94 +9,95 @@ import About from './components/pages/About';
 import './App.css';
 import Axios from 'axios';
 
-class App extends Component {
-  state = {
-    users: [],
-    loading: false,
-    alert: null,
-    user: {},
-    repos: [],
-  };
+const App = () => {
+  const [users, setUsers] = useState([]);
+  const [user, setUser] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [userRepos, setUserRepos] = useState([]);
+  const [alert, setAlert] = useState(null);
 
   // Get a single user profile
-  getUser = async (username) => {
-    this.setState({ loading: true });
+  const getUser = async (username) => {
+    setLoading(true);
     const res = await Axios.get(`https://api.github.com/users/${username}?client=${process.env.REACT_APP_GITHUB_CLIENT_ID}&
     client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`);
-    this.setState({ user: res.data, loading: false });
+    setUser(res.data);
+    setLoading(false);
   };
 
   // Get last five repos for the user
-  getUserRepos = async (username) => {
-    this.setState({ loading: true });
+  const getUserRepos = async (username) => {
+    setLoading(true);
     const res = await Axios.get(`https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client=${process.env.REACT_APP_GITHUB_CLIENT_ID}&
     client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`);
-    this.setState({ repos: res.data, loading: false });
+    setUserRepos(res.data);
+    setLoading(false);
   };
 
   // Search Github users
   // because this function is an arrow function, we use the keyword async before the params
-  searchUsers = async (search) => {
-    this.setState({ loading: true });
+  const searchUsers = async (search) => {
+    setLoading(true);
     const res = await Axios.get(`https://api.github.com/search/users?q=${search}&client=${process.env.REACT_APP_GITHUB_CLIENT_ID}&
     client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`);
-    this.setState({ users: res.data.items, loading: false });
+    setUsers(res.data.items);
+    setLoading(false);
   };
 
   // clear users from state
-  clearUsers = () => this.setState({ users: [], loading: false });
-
-  // Set an alert when the search field is blank
-  setAlert = (msg, type) => {
-    this.setState({ alert: { msg, type } }); //{ alert: { msg: msg, type: type } }
-    setTimeout(() => this.setState({ alert: null }), 2000);
+  const clearUsers = () => {
+    setUsers([]);
+    setLoading(false);
   };
 
-  render() {
-    const { users, loading, alert, user, repos } = this.state;
-    return (
-      <Router>
-        <div className='App'>
-          <Navbar title='Github Finder' icon='fab fa-github'></Navbar>
-          <div className='container'>
-            <Alert alert={alert}></Alert>
-            <Switch>
-              <Route
-                exact
-                path='/'
-                render={(props) => (
-                  <Fragment>
-                    <Search
-                      searchUsers={this.searchUsers}
-                      clearUsers={this.clearUsers}
-                      showClear={users.length > 0 ? true : false}
-                      setAlert={this.setAlert}
-                    ></Search>
-                    <Users loading={loading} users={users}></Users>
-                  </Fragment>
-                )}
-              ></Route>
-              <Route exact path='/about' component={About}></Route>
-              <Route
-                exact
-                path='/user/:login'
-                render={(props) => (
-                  <User
-                    {...props}
-                    getUser={this.getUser}
-                    getUserRepos={this.getUserRepos}
-                    user={user}
-                    loading={loading}
-                    repos={repos}
-                  ></User>
-                )}
-              ></Route>
-            </Switch>
-          </div>
+  // Set an alert when the search field is blank
+  const showAlert = (msg, type) => {
+    setAlert({ msg, type });
+    setTimeout(() => setAlert(null), 2000);
+  };
+
+  return (
+    <Router>
+      <div className='App'>
+        <Navbar title='Github Finder' icon='fab fa-github'></Navbar>
+        <div className='container'>
+          <Alert alert={alert}></Alert>
+          <Switch>
+            <Route
+              exact
+              path='/'
+              render={(props) => (
+                <Fragment>
+                  <Search
+                    searchUsers={searchUsers}
+                    clearUsers={clearUsers}
+                    showClear={users.length > 0 ? true : false}
+                    setAlert={showAlert}
+                  ></Search>
+                  <Users loading={loading} users={users}></Users>
+                </Fragment>
+              )}
+            ></Route>
+            <Route exact path='/about' component={About}></Route>
+            <Route
+              exact
+              path='/user/:login'
+              render={(props) => (
+                <User
+                  {...props}
+                  getUser={getUser}
+                  getUserRepos={getUserRepos}
+                  user={user}
+                  loading={loading}
+                  repos={userRepos}
+                ></User>
+              )}
+            ></Route>
+          </Switch>
         </div>
-      </Router>
-    );
-  }
-}
+      </div>
+    </Router>
+  );
+};
 
 export default App;
