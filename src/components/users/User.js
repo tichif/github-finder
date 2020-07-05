@@ -1,10 +1,13 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useContext } from 'react';
 import Spinner from '../layout/Spinner';
 import Repos from '../repos/Repos';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import GithubContext from '../../context/github/githubContext';
 
-const User = ({ loading, repos, user, getUser, getUserRepos, match }) => {
+const User = ({ repos, getUserRepos, match }) => {
+  const githubContext = useContext(GithubContext);
+  const { user, loading, getUser } = githubContext;
   // if you use UseEffect, you should put an [] in second argument
   // otherwise there will be an infinite loop
   useEffect(() => {
@@ -105,9 +108,6 @@ const User = ({ loading, repos, user, getUser, getUserRepos, match }) => {
 };
 
 User.propTypes = {
-  user: PropTypes.object.isRequired,
-  loading: PropTypes.bool.isRequired,
-  getUser: PropTypes.func.isRequired,
   getUserRepos: PropTypes.func.isRequired,
   repos: PropTypes.array.isRequired,
 };
