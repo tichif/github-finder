@@ -10,6 +10,18 @@ import {
   GET_USER,
 } from '../types';
 
+let githubClientId;
+let githubClientSecret;
+
+// Check the env (dev or prod)
+if (process.env.NODE_ENV !== 'production') {
+  githubClientId = process.env.REACT_APP_GITHUB_CLIENT_ID;
+  githubClientSecret = process.env.REACT_APP_GITHUB_CLIENT_SECRET;
+} else {
+  githubClientId = process.env.GITHUB_CLIENT_ID;
+  githubClientSecret = process.env.GITHUB_CLIENT_SECRET;
+}
+
 const GithubState = (props) => {
   const initialSate = {
     users: [],
@@ -23,8 +35,8 @@ const GithubState = (props) => {
   // Search Users
   const searchUsers = async (search) => {
     setLoading();
-    const res = await Axios.get(`https://api.github.com/search/users?q=${search}&client=${process.env.REACT_APP_GITHUB_CLIENT_ID}&
-    client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`);
+    const res = await Axios.get(`https://api.github.com/search/users?q=${search}&client=${githubClientId}&
+    client_secret=${githubClientSecret}`);
 
     dispatch({ type: SEARCH_USERS, payload: res.data.items });
   };
@@ -32,16 +44,16 @@ const GithubState = (props) => {
   // Get User
   const getUser = async (username) => {
     setLoading();
-    const res = await Axios.get(`https://api.github.com/users/${username}?client=${process.env.REACT_APP_GITHUB_CLIENT_ID}&
-    client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`);
+    const res = await Axios.get(`https://api.github.com/users/${username}?client=${githubClientId}&
+    client_secret=${githubClientSecret}`);
     dispatch({ type: GET_USER, payload: res.data });
   };
 
   // Get Repos
   const getUserRepos = async (username) => {
     setLoading();
-    const res = await Axios.get(`https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client=${process.env.REACT_APP_GITHUB_CLIENT_ID}&
-    client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`);
+    const res = await Axios.get(`https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client=${githubClientId}&
+    client_secret=${githubClientSecret}`);
     dispatch({ type: GET_REPOS, payload: res.data });
   };
 
